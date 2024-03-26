@@ -30,11 +30,20 @@ void Lexer::skipWhitespace() {
     }
 }
 
+void Lexer::skipComment() {
+    if (peek() == '#' && !isEndOfFile()) {
+        while (peek() != '\n' && !isEndOfFile()) {
+            consume();
+        }
+    }
+}
+
 // Helper function to recognize different operators
 bool Lexer::is_operator_char(char c) {
     // Define the characters that represent different types of operators
     static const std::string arithmeticOperators = "+-*/%**";
     static const std::string comparisonOperators = "=!<>";
+    static const std::string punctuation = "()[]{}:;,.";
 
     // Check if the character is part of an arithmetic operator
     if (arithmeticOperators.find(c) != std::string::npos) {
@@ -43,6 +52,11 @@ bool Lexer::is_operator_char(char c) {
 
     // Check if the character is part of a comparison operator
     if (comparisonOperators.find(c) != std::string::npos) {
+        return true;
+    }
+
+    // Check if the character is part of punctuation
+    if (punctuation.find(c) != std::string::npos) {
         return true;
     }
 
@@ -59,6 +73,15 @@ bool Lexer::is_operator_char(char c) {
     return false;
 }
 
+// Helper function to recognize floating point numbers
+bool Lexer::is_float_literal(const std::string& str) {
+    char* end;
+
+    // Check if string is a floating point number by attempting to convert to floating-point value
+    std::strtod(str.c_str(), &end);
+    return *end == '\0';
+}
+
 // Helper function to read an identifier or keyword
 std::string Lexer::readIdentifierOrKeyword() {
     std::string result;
@@ -70,7 +93,7 @@ std::string Lexer::readIdentifierOrKeyword() {
     if (keywords.find(result) != keywords.end()) {
         return result; // Return the keyword
     }
-    return "IDENTIFIER"; // Otherwise, return as identifier
+    return "IDENTIFIER"; 
 }
 
 // Helper function to read a number (integer or float)
@@ -80,7 +103,7 @@ std::string Lexer::readNumber() {
         result += peek();
         consume();
     }
-    return "NUMBER"; // Return as number token
+    return result; // will classify token within main
 }
 
 // Helper function to read a string literal
@@ -110,14 +133,20 @@ std::vector<std::string> Lexer::tokenize() {
     std::vector<std::string> tokens;
     while (!isEndOfFile()) {
         skipWhitespace();
+        skipComment();
         if (isEndOfFile()) {
             break;
         }
         char currentChar = peek();
         if (std::isalpha(currentChar) || currentChar == '_') {
             tokens.push_back(readIdentifierOrKeyword());
-        } else if (std::isdigit(currentChar) || currentChar == '.') {
-            tokens.push_back(readNumber());
+        } else if (std::isdigit(currentChar)) {
+            std::string number = readNumber();
+            if (is_float_literal(number)) {
+                tokens.push_back("FLOAT_LITERAL"); // Push floating-point literal token
+            } else {
+                tokens.push_back("INTEGER_LITERAL"); // Push integer literal token
+            }
         } else if (currentChar == '"') {
             tokens.push_back(readStringLiteral());
         } else {

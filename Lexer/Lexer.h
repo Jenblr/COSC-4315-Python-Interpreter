@@ -21,8 +21,8 @@ private:
     char peek() const;
     bool isEndOfFile() const;
     void skipWhitespace();
+    void skipComment();
     bool is_operator_char(char c);
-    bool is_digit(char c);
     bool is_float_literal(const std::string& str);
     std::string readIdentifierOrKeyword();
     std::string readNumber();
