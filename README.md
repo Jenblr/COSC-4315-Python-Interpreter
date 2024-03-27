@@ -8,7 +8,8 @@
 # Table of Contents
 - Lexer
 ---
-## Lexer Files:
+## Lexer Files: 
+**NOTE: Need to modify Lexer to accommodate new helper functions -03/26**
 - Lexer.h
 - Lexer.cpp
 

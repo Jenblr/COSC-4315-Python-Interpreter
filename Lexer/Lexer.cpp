@@ -3,8 +3,8 @@
 // Constructor
 Lexer::Lexer(const std::string& input_code) : code(input_code), position(0) {}
 
-// Helper function to consume characters from the input
-void Lexer::consume() {
+// Helper function to read characters from the input
+void Lexer::readNext() {
     if (position < code.size()) {
         position++;
     }
@@ -26,14 +26,19 @@ bool Lexer::isEndOfFile() const {
 // Helper function to skip whitespace characters
 void Lexer::skipWhitespace() {
     while (!isEndOfFile() && std::isspace(peek())) {
-        consume();
+        readNext();
     }
 }
 
+// Helper function to skip comments
 void Lexer::skipComment() {
-    if (peek() == '#' && !isEndOfFile()) {
-        while (peek() != '\n' && !isEndOfFile()) {
-            consume();
+    char currentChar = peek();
+
+    // Check if the current character indicates the start of a comment
+    if (currentChar == '#') {
+        // Skip until the end of the line or end of file
+        while (!isEndOfFile() && peek() != '\n') {
+            readNext();
         }
     }
 }
@@ -65,21 +70,54 @@ bool Lexer::is_operator_char(char c) {
         return true;
     }
 
-    // Check for assignment operators
+    // Check for assignment operator
     if (c == '=') {
         return true;
     }
 
+
     return false;
 }
 
-// Helper function to recognize floating point numbers
-bool Lexer::is_float_literal(const std::string& str) {
-    char* end;
+// Helper function to identify a function name
+bool Lexer::is_function_name(const std::string& result) {
+    // Check if the result starts with 'def', indicating a function definition
+    if (result.substr(0, 3) != "def") {
+        return false;
+    }
 
-    // Check if string is a floating point number by attempting to convert to floating-point value
-    std::strtod(str.c_str(), &end);
-    return *end == '\0';
+    // Check if the rest of the string contains valid characters for a function name
+    std::string functionName = result.substr(3); // Skip 'def'
+    for (char c : functionName) {
+        if (!std::isalnum(c) && c != '_') {
+            return false;
+        }
+    }
+
+    // Check if the result is not a keyword
+    if (keywords.find(result) != keywords.end()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Lexer::is_variable_name(const std::string& result) {
+    // Variable names cannot start with a digit
+    if (std::isdigit(result[0]))
+        return false;
+
+    // Check if each character is alphanumeric or underscore
+    for (char c : result) {
+        if (!std::isalnum(c) && c != '_')
+            return false;
+    }
+    
+    // Check if the name is not a keyword
+    if (keywords.find(result) != keywords.end())
+        return false;
+
+    return true;
 }
 
 // Helper function to read an identifier or keyword
@@ -87,21 +125,22 @@ std::string Lexer::readIdentifierOrKeyword() {
     std::string result;
     while (!isEndOfFile() && (std::isalnum(peek()) || peek() == '_')) {
         result += peek();
-        consume();
+        readNext();
     }
     // Check if the identifier is a keyword
     if (keywords.find(result) != keywords.end()) {
         return result; // Return the keyword
     }
+    
     return result;
 }
 
-// Helper function to read a number (integer or float)
+// Helper function to read a number (integer only)
 std::string Lexer::readNumber() {
     std::string result;
-    while (!isEndOfFile() && (std::isdigit(peek()) || peek() == '.')) {
+    while (!isEndOfFile() && std::isdigit(peek())) {
         result += peek();
-        consume();
+        readNext();
     }
     return result; 
 }
@@ -109,12 +148,16 @@ std::string Lexer::readNumber() {
 // Helper function to read a string literal
 std::string Lexer::readStringLiteral() {
     std::string result;
-    consume(); // Consume the opening quote
+    readNext(); // Read the opening quote
+    result += '"';
     while (!isEndOfFile() && peek() != '"') {
         result += peek();
-        consume();
+        readNext();
     }
-    consume(); // Consume the closing quote
+    if (!isEndOfFile()) {
+        result += peek();
+        readNext(); // Read the closing quote
+    }
     return result;
 }
 
@@ -123,19 +166,21 @@ std::string Lexer::readOperator() {
     std::string result;
     while (!isEndOfFile() && is_operator_char(peek())) {
         result += peek();
-        consume();
+        readNext();
     }
     return result;
 }
 
-// Token classification function
+
 TokenType Lexer::classifyToken(const std::string& tokenValue) {
     if (keywords.find(tokenValue) != keywords.end()) {
         return TokenType::KEYWORD;
+    } else if(is_function_name(tokenValue)) {
+        return TokenType::FUNCTION_NAME;
+    } else if(is_variable_name(tokenValue)) {
+        return TokenType::VARIABLE_NAME;
     } else if (is_operator_char(tokenValue[0])) {
         return TokenType::OPERATOR;
-    } else if (is_float_literal(tokenValue)) {
-        return TokenType::FLOAT_LITERAL;
     } else if (std::isdigit(tokenValue[0])) {
         return TokenType::INTEGER_LITERAL;
     } else if (tokenValue.front() == '"' && tokenValue.back() == '"') {
@@ -146,35 +191,42 @@ TokenType Lexer::classifyToken(const std::string& tokenValue) {
 }
 
 // Main function to tokenize the input Python code
-std::vector<std::string> Lexer::tokenize() {
-    std::vector<std::string> tokens;
+std::vector<Token> Lexer::tokenize() {
+    std::vector<Token> tokens;
+    std::string previousToken;
+
     while (!isEndOfFile()) {
         skipWhitespace();
         skipComment();
 
         if (isEndOfFile()) {
+            tokens.push_back({TokenType::END_OF_FILE, ""});
             break;
         }
 
-        char currentChar = peek();
+        char currentChar = peek(); // Get current character
 
         if (std::isalpha(currentChar) || currentChar == '_') {
             std::string tokenValue = readIdentifierOrKeyword();
-            TokenType tokenType = classifyToken(tokenValue); 
-            tokens.push_back(tokenValue);
+            TokenType tokenType = classifyToken(tokenValue);
+            tokens.push_back({tokenType, tokenValue}); 
         } else if (std::isdigit(currentChar)) {
             std::string tokenValue = readNumber();
-            TokenType tokenType = classifyToken(tokenValue); 
-            tokens.push_back(tokenValue);
+            TokenType tokenType = classifyToken(tokenValue);
+            tokens.push_back({tokenType, tokenValue}); 
         } else if (currentChar == '"') {
             std::string tokenValue = readStringLiteral();
-            TokenType tokenType = classifyToken(tokenValue); 
-            tokens.push_back(tokenValue);
+            TokenType tokenType = classifyToken(tokenValue);
+            tokens.push_back({tokenType, tokenValue}); 
+        } else if (currentChar == '\n') {
+            // Skip consecutive newlines
+            readNext();
         } else {
             std::string tokenValue = readOperator();
-            TokenType tokenType = classifyToken(tokenValue); 
-            tokens.push_back(tokenValue);
+            TokenType tokenType = classifyToken(tokenValue);
+            tokens.push_back({tokenType, tokenValue}); 
         }
+
     }
     return tokens;
 }
