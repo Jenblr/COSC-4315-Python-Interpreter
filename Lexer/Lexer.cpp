@@ -93,7 +93,7 @@ std::string Lexer::readIdentifierOrKeyword() {
     if (keywords.find(result) != keywords.end()) {
         return result; // Return the keyword
     }
-    return "IDENTIFIER"; 
+    return result;
 }
 
 // Helper function to read a number (integer or float)
@@ -103,7 +103,7 @@ std::string Lexer::readNumber() {
         result += peek();
         consume();
     }
-    return result; // will classify token within main
+    return result; 
 }
 
 // Helper function to read a string literal
@@ -115,7 +115,7 @@ std::string Lexer::readStringLiteral() {
         consume();
     }
     consume(); // Consume the closing quote
-    return "STRING"; // Return as string token
+    return result;
 }
 
 // Helper function to read operators
@@ -128,30 +128,52 @@ std::string Lexer::readOperator() {
     return result;
 }
 
+// Token classification function
+TokenType Lexer::classifyToken(const std::string& tokenValue) {
+    if (keywords.find(tokenValue) != keywords.end()) {
+        return TokenType::KEYWORD;
+    } else if (is_operator_char(tokenValue[0])) {
+        return TokenType::OPERATOR;
+    } else if (is_float_literal(tokenValue)) {
+        return TokenType::FLOAT_LITERAL;
+    } else if (std::isdigit(tokenValue[0])) {
+        return TokenType::INTEGER_LITERAL;
+    } else if (tokenValue.front() == '"' && tokenValue.back() == '"') {
+        return TokenType::STRING_LITERAL;
+    } else {
+        return TokenType::IDENTIFIER;
+    }
+}
+
 // Main function to tokenize the input Python code
 std::vector<std::string> Lexer::tokenize() {
     std::vector<std::string> tokens;
     while (!isEndOfFile()) {
         skipWhitespace();
         skipComment();
+
         if (isEndOfFile()) {
             break;
         }
+
         char currentChar = peek();
+
         if (std::isalpha(currentChar) || currentChar == '_') {
-            tokens.push_back(readIdentifierOrKeyword());
+            std::string tokenValue = readIdentifierOrKeyword();
+            TokenType tokenType = classifyToken(tokenValue); 
+            tokens.push_back(tokenValue);
         } else if (std::isdigit(currentChar)) {
-            std::string number = readNumber();
-            if (is_float_literal(number)) {
-                tokens.push_back("FLOAT_LITERAL"); // Push floating-point literal token
-            } else {
-                tokens.push_back("INTEGER_LITERAL"); // Push integer literal token
-            }
+            std::string tokenValue = readNumber();
+            TokenType tokenType = classifyToken(tokenValue); 
+            tokens.push_back(tokenValue);
         } else if (currentChar == '"') {
-            tokens.push_back(readStringLiteral());
+            std::string tokenValue = readStringLiteral();
+            TokenType tokenType = classifyToken(tokenValue); 
+            tokens.push_back(tokenValue);
         } else {
-            tokens.push_back(std::string(1, currentChar)); // Single character token
-            consume(); // Consume the character
+            std::string tokenValue = readOperator();
+            TokenType tokenType = classifyToken(tokenValue); 
+            tokens.push_back(tokenValue);
         }
     }
     return tokens;

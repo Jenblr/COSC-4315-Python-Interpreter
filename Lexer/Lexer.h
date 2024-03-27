@@ -6,6 +6,22 @@
 #include <cctype>
 #include <unordered_set>
 
+// Enum to represent different token types
+enum class TokenType {
+    IDENTIFIER,
+    KEYWORD,
+    OPERATOR,
+    INTEGER_LITERAL,
+    FLOAT_LITERAL,
+    STRING_LITERAL
+};
+
+// Structure to represent a token
+struct Token {
+    TokenType type;
+    std::string value;
+};
+
 class Lexer {
 public:
     Lexer(const std::string& input_code);
@@ -34,6 +50,9 @@ private:
     const std::unordered_set<std::string> keywords = {
         "if", "else", "while", "for", "def", "return", "True", "False"
     };
+
+    // Token classification function
+    TokenType classifyToken(const std::string& tokenValue);
 };
 
 #endif // LEXER_H
