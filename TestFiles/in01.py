@@ -1,11 +1,12 @@
-#Basic Arithmetic and Comments
+#variable assignments and comments
 
-# Perform addition
-resultSum = 7 + 3  # 10
+#comments
+a = 3
 
-# Perform subtraction
-resultDifference = 10 - 4  # 6
+b = 2
+#re assign
+a = 1
 
-# Print results
-print("Sum = ", resultSum)
-print("Difference = ", resultDifference)
+#print results
+print("a =", a)
+print("b =", b)

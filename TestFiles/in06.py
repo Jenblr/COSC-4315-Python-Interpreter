@@ -1,14 +1,17 @@
-# Test Case 6:Local/Global Variables + Functions 
+#Test Case for: if ==
 
-# Global
-globalNumber = 5
+a = 12
+b = 2
+c = 3
 
-def addToGlobal(x):
-    localNumber = x
-    result = globalNumber + localNumber  # Uses global variable
-    return result
+d = b + c 
+resB = a * c + 5 + b
 
-localInput = 10
-resultFunctionCall = addToGlobal(localInput)
+z = 0
 
-print("ResultFunctionCall =", resultFunctionCall)
+#Check if condition to set z to 1
+
+if resB == 43:
+    z = 1
+
+print("z = ", z)

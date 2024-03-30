@@ -5,6 +5,7 @@
 #include <vector>
 #include <cctype>
 #include <unordered_set>
+#include <stack>
 
 // Enum to represent different token types
 enum class TokenType {
@@ -16,6 +17,9 @@ enum class TokenType {
     INTEGER_LITERAL, // 5
     STRING_LITERAL, // 6
     END_OF_FILE, // 7
+    INDENT, // 8
+    DEDENT, // 9
+    NEWLINE, //10
 };
 
 // Structure to represent a token
@@ -32,7 +36,8 @@ public:
 private:
     const std::string code;
     size_t position;
-    size_t indentationLevel;
+    size_t currentLineNumber;
+    std::stack<size_t> indentation_stack; // Maintain a stack to track indentation levels
     
     /* HELPER FUNCTIONS: Below are different types of helper functions to 
     read and account for within a Python code.*/
@@ -48,7 +53,6 @@ private:
     std::string readNumber();
     std::string readStringLiteral();
     std::string readOperator();
-
 
     // Define keywords as a set for efficient lookup
     const std::unordered_set<std::string> keywords = {

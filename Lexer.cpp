@@ -1,11 +1,14 @@
 #include "Lexer.h"
 
-// Constructor
-Lexer::Lexer(const std::string& input_code) : code(input_code), position(0) {}
+// Constructor to call Lexer class in header
+Lexer::Lexer(const std::string& input_code) : code(input_code), position(0), currentLineNumber(1) {}
 
 // Helper function to read characters from the input
 void Lexer::readNext() {
     if (position < code.size()) {
+        if (code[position] == '\n') {
+            currentLineNumber++; 
+        }
         position++;
     }
 }
@@ -49,6 +52,7 @@ bool Lexer::is_operator_char(char c) {
     static const std::string arithmeticOperators = "+-*/%**";
     static const std::string comparisonOperators = "=!<>";
     static const std::string punctuation = "()[]{}:;,.";
+    static const std::vector<std::string> logicalOperators = {"and", "or", "not"}; // Note: Define in phase 2
 
     // Check if the character is part of an arithmetic operator
     if (arithmeticOperators.find(c) != std::string::npos) {
@@ -171,7 +175,6 @@ std::string Lexer::readOperator() {
     return result;
 }
 
-
 TokenType Lexer::classifyToken(const std::string& tokenValue) {
     if (keywords.find(tokenValue) != keywords.end()) {
         return TokenType::KEYWORD;
@@ -194,19 +197,43 @@ TokenType Lexer::classifyToken(const std::string& tokenValue) {
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     std::string previousToken;
+    size_t previousIndentationLevel = 0;
 
+    // Perform tokenization until file is completely consumed
     while (!isEndOfFile()) {
-        skipWhitespace();
         skipComment();
 
-        if (isEndOfFile()) {
-            tokens.push_back({TokenType::END_OF_FILE, ""});
-            break;
-        }
-
         char currentChar = peek(); // Get current character
+        size_t indentationLevel = 0;
 
-        if (std::isalpha(currentChar) || currentChar == '_') {
+        if (std::isspace(currentChar)) {
+            if (currentChar == '\n') {
+                // Skip empty lines
+                while (peek() == '\n') {
+                    readNext();
+                    currentLineNumber++;
+                }
+
+                // Count indentation spaces
+                while (peek() == ' ') {
+                    readNext();
+                    indentationLevel++;
+                }
+
+                if (indentationLevel > previousIndentationLevel) {
+                    tokens.push_back({TokenType::INDENT, ""});
+                    indentation_stack.push(indentationLevel);
+                } else if (indentationLevel < previousIndentationLevel) {
+                    while (!indentation_stack.empty() && indentation_stack.top() > indentationLevel) {
+                        tokens.push_back({TokenType::DEDENT, ""});
+                        indentation_stack.pop();
+                    }
+                }
+                previousIndentationLevel = indentationLevel;
+            } else { // Space in-between code is not an indentation
+                skipWhitespace();
+            }
+        } else if (std::isalpha(currentChar) || currentChar == '_') {
             std::string tokenValue = readIdentifierOrKeyword();
             TokenType tokenType = classifyToken(tokenValue);
             tokens.push_back({tokenType, tokenValue}); 
@@ -228,5 +255,16 @@ std::vector<Token> Lexer::tokenize() {
         }
 
     }
+
+    // Add DEDENT tokens for remaining indentation levels
+    while (!indentation_stack.empty()) {
+        tokens.push_back({TokenType::DEDENT, ""});
+        indentation_stack.pop();
+    }
+
+    if (isEndOfFile()) {
+        tokens.push_back({TokenType::END_OF_FILE, ""});
+    }
+
     return tokens;
 }

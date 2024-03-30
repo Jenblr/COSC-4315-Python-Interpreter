@@ -1,0 +1,25 @@
+        // Handle indentation
+        if (currentChar == ' ') {
+            if (position == 0) {
+                int countSpaces = 0;
+                while (peek() == ' ') {
+                    countSpaces++;
+                    readNext(); // Move to the next character
+                }
+
+                if (countSpaces > currentIndentation) {
+                    tokens.push_back({TokenType::INDENT});
+                    currentIndentation = countSpaces;
+                } else if (countSpaces < currentIndentation) {
+                    // Add dedent tokens to match the current indentation level
+                    while (countSpaces < currentIndentation) {
+                        tokens.push_back({TokenType::DEDENT});
+                        currentIndentation--;
+                    }
+                }
+                // Skip consecutive spaces
+                readNext();
+            } else {
+                skipWhitespace();
+            }
+        }

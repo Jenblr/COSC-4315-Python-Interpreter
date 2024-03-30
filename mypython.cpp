@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "Lexer/Lexer.h"
+#include "Lexer.h"
 
 int main(int argc, char* argv[]) {
     // Parse command line arguments
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     oss << file.rdbuf();
     std::string fileContents = oss.str();
 
-    // Tokenize Python code usinng Lexer
+    // Tokenize Python code using Lexer
     Lexer lexer(fileContents);
     std::vector<Token> tokens = lexer.tokenize();
 
