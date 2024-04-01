@@ -11,11 +11,7 @@ Parser::Parser(Lexer& lexer) : lexer(lexer), tokens(lexer.tokenize()), currentTo
 std::unique_ptr<ASTNode> Parser::parse() {
     try {
         std::cout << "Starting parsing..." << std::endl;
-        return parseExpression();
-        return parseTerm();
-        return parseFactor();
-        return parseStatement();
-        return parseAssignment();
+        return parseAssignment(); 
     } catch (const std::exception& e) {
         // Print error message and rethrow the exception
         std::cerr << "Parsing error: " << e.what() << std::endl;
@@ -149,39 +145,44 @@ std::unique_ptr<ASTNode> Parser::parseFactor() {
 std::unique_ptr<ASTNode> Parser::parseAssignment() {
     std::cout << "Parsing assignment..." << std::endl;
 
-    // Continue parsing until there are no more tokens left
-    while (currentToken < tokens.size()) {
-        // Parse variable name
-        if (tokens[currentToken].type == TokenType::VARIABLE_NAME) {
-            std::string variableName = tokens[currentToken].value;
-            currentToken++; // Move to next token
-            // Ensure next token is '='
-            if (currentToken < tokens.size() && tokens[currentToken].type == TokenType::OPERATOR && tokens[currentToken].value == "=") {
-                currentToken++; // Move to next token
-                // Parse expression on right-hand side of assignment
-                std::unique_ptr<ASTNode> expression = parseExpression();
-                if (expression) {
-                    // Create assignment node
-                    return std::unique_ptr<AssignmentNode>(new AssignmentNode(
-                        std::unique_ptr<VariableNode>(new VariableNode(variableName)),
-                        std::move(expression)
-                    ));
-                } else {
-                    // Error: Invalid expression
-                    return nullptr;
-                }
-            } else {
-                // Error: Expected '=' after variable name
-                return nullptr;
-            }
-        } else {
-            // Move to the next token if none of the conditions match
-            currentToken++;
-        }
+    // Check if the current token is a variable name
+    if (tokens[currentToken].type != TokenType::VARIABLE_NAME) {
+        std::cerr << "Error: Expected a variable name." << std::endl;
+        return nullptr;
     }
 
-    // If no tokens are left, return nullptr
-    return parseStatement();
+    // Extract the variable name
+    std::string variableName = tokens[currentToken].value;
+    currentToken++; // Move to the next token
+
+    // Check if the next token is '='
+    if (tokens[currentToken].type != TokenType::OPERATOR || tokens[currentToken].value != "=") {
+        std::cerr << "Error: Expected '=' after variable name." << std::endl;
+        return nullptr;
+    }
+    currentToken++; // Move to the next token
+
+    // Parse the expression on the right-hand side of the assignment
+    std::unique_ptr<ASTNode> expression = parseExpression();
+    if (!expression) {
+        std::cerr << "Error: Failed to parse the expression on the right-hand side of the assignment." << std::endl;
+        return nullptr;
+    }
+
+    // Check if the expression is an integer literal
+    IntegerNode* integerNode = dynamic_cast<IntegerNode*>(expression.get());
+    if (!integerNode) {
+        std::cerr << "Error: Expected an integer literal on the right-hand side of the assignment." << std::endl;
+        return nullptr;
+    }
+
+    // Assign the value of the integer literal to the variable name
+    int value = integerNode->getValue();
+    // Create assignment node
+    return std::unique_ptr<AssignmentNode>(new AssignmentNode(
+        std::unique_ptr<VariableNode>(new VariableNode(variableName)),
+        std::unique_ptr<IntegerNode>(new IntegerNode(value))
+    ));
 }
 
 std::unique_ptr<StatementNode> Parser::parseStatement() {

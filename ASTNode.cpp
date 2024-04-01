@@ -158,9 +158,16 @@ const ASTNode* AssignmentNode::getExpression() const {
 
 void AssignmentNode::print(int indentation) const {
     std::cout << std::string(indentation, ' ') << "Assignment Node" << std::endl;
-    variable->print(indentation + 2);
-    expression->print(indentation + 2);
+    std::cout << std::string(indentation + 2, ' ') << "Variable: ";
+    variable->print(); // Print the variable node
+    std::cout << std::string(indentation + 2, ' ') << "Expression: ";
+    if (dynamic_cast<IntegerNode*>(expression.get())) {
+        dynamic_cast<IntegerNode*>(expression.get())->print(); // Print the integer node
+    } else {
+        std::cerr << "Error: Expected an integer expression in AssignmentNode." << std::endl;
+    }
 }
+
 
 // Implementation for LiteralNode
 void LiteralNode::print(int indentation) const {
