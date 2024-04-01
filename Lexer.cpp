@@ -251,9 +251,5 @@ std::vector<Token> Lexer::tokenize() {
         indentation_stack.pop();
     }
 
-    if (isEndOfFile()) {
-        tokens.push_back({TokenType::END_OF_FILE, ""});
-    }
-
     return tokens;
 }

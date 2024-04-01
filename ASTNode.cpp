@@ -3,9 +3,14 @@
 // AdditionNode constructor
 AdditionNode::AdditionNode(std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
     : left(std::move(left)), right(std::move(right)) {
-    // Check if left and right operands are valid
-    if (!this->left || !this->right) {
-        throw std::invalid_argument("Invalid left or right operand for AdditionNode.");
+    // Check if left operand is valid
+    if (!this->left) {
+        throw std::invalid_argument("Invalid left operand for AdditionNode.");
+    }
+
+    // Check if right operand is valid
+    if (!this->right) {
+        throw std::invalid_argument("Invalid right operand for AdditionNode.");
     }
 }
 
@@ -26,12 +31,17 @@ void AdditionNode::print(int indentation) const {
     right->print(indentation + 2);
 }
 
-// Implementation for SubtractionNode
+// SubtractionNode constructor
 SubtractionNode::SubtractionNode(std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
     : left(std::move(left)), right(std::move(right)) {
-    // Check if left and right operands are valid
-    if (!this->left || !this->right) {
-        throw std::invalid_argument("Invalid left or right operand for SubtractionNode.");
+    // Check if left operand is valid
+    if (!this->left) {
+        throw std::invalid_argument("Invalid left operand for SubtractionNode.");
+    }
+
+    // Check if right operand is valid
+    if (!this->right) {
+        throw std::invalid_argument("Invalid right operand for SubtractionNode.");
     }
 }
 
@@ -49,12 +59,17 @@ void SubtractionNode::print(int indentation) const {
     right->print(indentation + 2);
 }
 
-// Implementation for MultiplicationNode
+// MultiplicationNode constructor
 MultiplicationNode::MultiplicationNode(std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
     : left(std::move(left)), right(std::move(right)) {
-    // Check if left and right operands are valid
-    if (!this->left || !this->right) {
-        throw std::invalid_argument("Invalid left or right operand for MultiplicationNode.");
+    // Check if left operand is valid
+    if (!this->left) {
+        throw std::invalid_argument("Invalid left operand for MultiplicationNode.");
+    }
+
+    // Check if right operand is valid
+    if (!this->right) {
+        throw std::invalid_argument("Invalid right operand for MultiplicationNode.");
     }
 }
 
@@ -72,12 +87,17 @@ void MultiplicationNode::print(int indentation) const {
     right->print(indentation + 2);
 }
 
-// Implementation for DivisionNode
+// DivisionNode constructor
 DivisionNode::DivisionNode(std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right)
     : left(std::move(left)), right(std::move(right)) {
-    // Check if left and right operands are valid
-    if (!this->left || !this->right) {
-        throw std::invalid_argument("Invalid left or right operand for DivisionNode.");
+    // Check if left operand is valid
+    if (!this->left) {
+        throw std::invalid_argument("Invalid left operand for DivisionNode.");
+    }
+
+    // Check if right operand is valid
+    if (!this->right) {
+        throw std::invalid_argument("Invalid right operand for DivisionNode.");
     }
 }
 
@@ -117,12 +137,14 @@ void VariableNode::print(int indentation) const {
     std::cout << std::string(indentation, ' ') << "Variable Node: " << name << std::endl;
 }
 
-// Implementation for AssignmentNode
 AssignmentNode::AssignmentNode(std::unique_ptr<ASTNode> variable, std::unique_ptr<ASTNode> expression)
     : variable(std::move(variable)), expression(std::move(expression)) {
     // Check if variable and expression are valid
-    if (!this->variable || !this->expression) {
-        throw std::invalid_argument("Invalid variable or expression for AssignmentNode.");
+    if (!this->variable) {
+        throw std::invalid_argument("Invalid variable for AssignmentNode.");
+    }
+    if (!this->expression) {
+        throw std::invalid_argument("Invalid expression for AssignmentNode.");
     }
 }
 

@@ -25,8 +25,8 @@ private:
     std::unique_ptr<ASTNode> parseExpression();
     std::unique_ptr<ASTNode> parseTerm();
     std::unique_ptr<ASTNode> parseFactor();
-    std::unique_ptr<StatementNode> parseStatement();
     std::unique_ptr<ASTNode> parseAssignment();
+    std::unique_ptr<StatementNode> parseStatement();
 
     // Helper function to throw parsing errors
     void throwError(const std::string& message);
