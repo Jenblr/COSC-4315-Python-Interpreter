@@ -56,7 +56,7 @@ private:
 
     // Define keywords as a set for efficient lookup
     const std::unordered_set<std::string> keywords = {
-        "if", "else", "while", "for", "def", "return", "True", "False", "print"
+        "if", "else", "def", "return", "True", "False", "print"
     };
 
     // Token classification functions

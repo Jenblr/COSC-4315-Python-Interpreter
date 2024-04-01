@@ -1,0 +1,66 @@
+#include <memory>
+#include <vector>
+#include <string>
+
+// Forward declaration of AST node classes
+class ASTNode;
+class ExpressionNode;
+class AdditionNode;
+class SubtractionNode;
+class StatementNode;
+class VariableNode;
+class LiteralNode;
+class FunctionCallNode;
+class AssignmentNode;
+class IfStatementNode;
+
+// Define the base class for all AST nodes
+class ASTNode {
+public:
+    virtual ~ASTNode() = default;
+};
+
+// Expression : Produces a value when executed
+class ExpressionNode : public ASTNode {
+    public:
+    virtual ~ExpressionNode() = default;
+    
+    // Method to accept visitor for AST traversal
+    virtual void accept(ExpressionVisitor& visitor) = 0;
+};
+
+class VariableNode : public ExpressionNode {
+public:
+    std::string name;
+};
+
+class LiteralNode : public ExpressionNode {
+public:
+    std::string value;
+};
+
+class FunctionCallNode : public ExpressionNode {
+public:
+    std::string functionName;
+    std::vector<std::unique_ptr<ExpressionNode>> arguments;
+};
+
+// Statement : A complete line of code that performs an action (e.g. assignment, conditional, print, loop, or function defintion statement)
+// Define AST nodes for statements
+class StatementNode : public ASTNode {
+
+};
+
+class AssignmentNode : public StatementNode {
+public:
+    std::unique_ptr<VariableNode> variable;
+    std::unique_ptr<ExpressionNode> expression;
+};
+
+class IfStatementNode : public StatementNode {
+public:
+    std::unique_ptr<ExpressionNode> condition;
+    std::vector<std::unique_ptr<StatementNode>> ifBody;
+    std::vector<std::unique_ptr<StatementNode>> elseBody;
+};
+

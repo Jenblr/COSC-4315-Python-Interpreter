@@ -1,0 +1,34 @@
+#include "ASTNode.h"
+
+// Constructor for AST class
+ASTNode::AST(std::unique_ptr<ASTNode> root) : root(std::move(root)) {}
+
+// Example method for traversing the AST in a depth-first manner
+void ASTNode::depthFirstTraversal() const {
+    depthFirstTraversalHelper(root.get());
+}
+
+// Recursive helper function for depth-first traversal
+void AST::depthFirstTraversalHelper(const ASTNode* node) const {
+    if (node == nullptr) {
+        return;
+    }
+
+    // Process current node
+    // Example: Output node type or perform specific actions
+
+    // Recursively traverse children nodes
+    for (const auto& child : node->getChildren()) {
+        depthFirstTraversalHelper(child.get());
+    }
+}
+
+// Example method for performing semantic analysis on the AST
+void AST::performSemanticAnalysis() const {
+    // Implement semantic analysis logic
+}
+
+// Example method for optimizing the AST
+void AST::optimize() {
+    // Implement optimization logic
+}

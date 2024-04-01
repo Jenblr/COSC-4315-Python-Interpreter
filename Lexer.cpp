@@ -49,7 +49,7 @@ void Lexer::skipComment() {
 // Helper function to recognize different operators
 bool Lexer::is_operator_char(char c) {
     // Define the characters that represent different types of operators
-    static const std::string arithmeticOperators = "+-*/%**";
+    static const std::string arithmeticOperators = "+-*/";
     static const std::string comparisonOperators = "=!<>";
     static const std::string punctuation = "()[]{}:;,.";
     static const std::vector<std::string> logicalOperators = {"and", "or", "not"}; // Note: Define in phase 2
@@ -68,17 +68,6 @@ bool Lexer::is_operator_char(char c) {
     if (punctuation.find(c) != std::string::npos) {
         return true;
     }
-
-    // Check for logical operators
-    if (c == '&' || c == '|' || c == '!') {
-        return true;
-    }
-
-    // Check for assignment operator
-    if (c == '=') {
-        return true;
-    }
-
 
     return false;
 }
